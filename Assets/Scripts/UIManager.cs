@@ -1,20 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField] Button menuButton;
-    [SerializeField] Button replayButton;
-    [SerializeField] Button closeButton;
-    [SerializeField] Text scoreText;
-    [SerializeField] Text recordText;
-    [SerializeField] GameManager gameManager;
-    [SerializeField] Image health;
-    [SerializeField] GameObject pauseMenu;
-    [SerializeField] Text pauseText;
-    [SerializeField] GameObject loseMenu;
+    [SerializeField] private Button menuButton;
+    [SerializeField] private Button replayButton;
+    [SerializeField] private Button closeButton;
+    [SerializeField] private Text scoreText;
+    [SerializeField] private Text recordText;
+    [SerializeField] private GameManager gameManager;
+    [SerializeField] private Image health;
+    [SerializeField] private GameObject pauseMenu;
+    [SerializeField] private Text pauseText;
+    [SerializeField] private GameObject loseMenu;
     private float currentHealth;
     private float newHealthValue;
     private bool smoothHealthBar = false;

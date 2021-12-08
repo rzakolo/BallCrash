@@ -13,8 +13,8 @@ public class Ball : MonoBehaviour, IDamageable, IPausable
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         gameManager.OnPause += Pause;
         gameManager.OnResume += Resume;
-        settings = GetComponent<BallSettings>();
-        settings.IncreaseDifficult(Time.timeSinceLevelLoad / 50.0f);
+        var renderer = gameObject.GetComponent<Renderer>();
+        settings = new BallSettings(renderer);
         //death = new ParticleManager();
         mainCamera = Camera.main;
         //death.StartColor = settings.Color;
