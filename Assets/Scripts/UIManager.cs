@@ -15,11 +15,14 @@ public class UIManager : MonoBehaviour
     [SerializeField] GameObject pauseMenu;
     [SerializeField] Text pauseText;
     [SerializeField] GameObject loseMenu;
+    [SerializeField] GameObject adMenu;
+    [SerializeField] Button adButton;
     private float currentHealth;
     private float newHealthValue;
     private bool smoothHealthBar = false;
     private float progress;
     private ReplayScene scene;
+    [SerializeField] private AdService _adService;
 
     private void Awake()
     {
@@ -28,6 +31,10 @@ public class UIManager : MonoBehaviour
         gameManager.OnRecordChanged += OnRecordChanged;
         gameManager.OnHealthChanged += OnHealthChanged;
         gameManager.OnLoseGame += LoseGame;
+        _adService = new AdService();
+        _adService.InitServices();
+        adButton.onClick.AddListener(_adService.ShowRewardedAd);
+        adButton.onClick.AddListener(() => adMenu.SetActive(false));
     }
 
     private void Update()
@@ -59,6 +66,8 @@ public class UIManager : MonoBehaviour
         scoreText.gameObject.SetActive(false);
         closeButton.gameObject.SetActive(false);
         pauseText.gameObject.SetActive(false);
+        adMenu.SetActive(true);
+        _adService.ShowInterstitialAd();
     }
 
     private void OnRecordChanged(int newRecord)
@@ -70,5 +79,6 @@ public class UIManager : MonoBehaviour
     {
         scoreText.text = score.ToString();
     }
+
 
 }

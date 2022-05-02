@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Ball : MonoBehaviour, IDamageable, IPausable
 {
-    //private ParticleManager death;
+    private ParticleManager death;
     private BallSettings settings;
     private Camera mainCamera;
     private GameManager gameManager;
@@ -15,9 +15,8 @@ public class Ball : MonoBehaviour, IDamageable, IPausable
         gameManager.OnResume += Resume;
         settings = GetComponent<BallSettings>();
         settings.IncreaseDifficult(Time.timeSinceLevelLoad / 50.0f);
-        //death = new ParticleManager();
+        death = new ParticleManager();
         mainCamera = Camera.main;
-        //death.StartColor = settings.Color;
     }
 
     private void FixedUpdate()
@@ -36,7 +35,7 @@ public class Ball : MonoBehaviour, IDamageable, IPausable
     private void Death()
     {
         gameManager.OnPause -= Pause;
-        //Instantiate(death.prefab, transform.position, Quaternion.identity).Emit(1);
+        Instantiate(death.prefab, transform.position, death.prefab.transform.rotation);
         Destroy(gameObject, settings.BallDestroyDelay);
     }
     private void DeathWithReward()

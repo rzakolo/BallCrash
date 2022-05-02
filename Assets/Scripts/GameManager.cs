@@ -6,6 +6,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     private int point, lastRecord, health = 100;
+    private bool _loseGame = false;
     private SaveManager save;
     public event Action<int> OnPointChanged;
     public event Action<int> OnHealthChanged;
@@ -28,11 +29,19 @@ public class GameManager : MonoBehaviour
         this.point += point;
         OnPointChanged?.Invoke(this.point);
     }
+    public void DoublePoints()
+    {
+        point *= 2;
+        OnPointChanged?.Invoke(point);
+    }
     public void ApplyDamage(int value)
     {
         health -= value;
-        if (health <= 0)
+        if (health <= 0 && !_loseGame)
+        {
+            _loseGame = true;
             OnLoseGame?.Invoke();
+        }
         OnHealthChanged?.Invoke(health);
     }
     public void ChangeLastRecord()
