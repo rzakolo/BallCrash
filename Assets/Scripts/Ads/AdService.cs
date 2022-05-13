@@ -13,9 +13,14 @@ public class AdService
     private string _adInterstitialUnitId = "AdMob_Interstitial";
     private string _gameId = "4716511";
 
+
+    public AdService(GameManager gameManager)
+    {
+        _gameManager = gameManager;
+    }
+
     public async void InitServices()
     {
-        _gameManager = GameObject.FindObjectOfType<GameManager>();
         try
         {
             InitializationOptions initializationOptions = new InitializationOptions();

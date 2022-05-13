@@ -3,24 +3,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class GameManager
 {
     private int point, lastRecord, health = 100;
     private bool _loseGame = false;
-    private SaveManager save;
+    private SaveManager _save;
     public event Action<int> OnPointChanged;
     public event Action<int> OnHealthChanged;
     public event Action<int> OnRecordChanged;
     public event Action OnLoseGame;
-    public event Action OnPause;
-    public event Action OnResume;
-    private void Awake()
+    public GameManager(SaveManager saveManager)
     {
-        save = new SaveManager();
-        OnRecordChanged += save.SetRecord;
-    }
-    private void Start()
-    {
+        _save = saveManager;
+        OnRecordChanged += _save.SetRecord;
         LoadLastRecord();
     }
 
@@ -49,22 +44,14 @@ public class GameManager : MonoBehaviour
         lastRecord = point;
         OnRecordChanged?.Invoke(lastRecord);
     }
-    private void LoadLastRecord()
+    public void LoadLastRecord()
     {
-        lastRecord = save.Record;
+        lastRecord = _save.Record;
         OnRecordChanged?.Invoke(lastRecord);
     }
     private void OnApplicationQuit()
     {
         ChangeLastRecord();
-        OnRecordChanged -= save.SetRecord;
-    }
-    public void Pause()
-    {
-        OnPause?.Invoke();
-    }
-    public void Resume()
-    {
-        OnResume?.Invoke();
+        OnRecordChanged -= _save.SetRecord;
     }
 }

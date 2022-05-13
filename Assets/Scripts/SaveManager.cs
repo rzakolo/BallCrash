@@ -16,7 +16,7 @@ public class SaveManager
     }
     public void SetRecord(int record)
     {
-        if (record > this.Record)
+        if (record >= this.Record)
         {
             PlayerPrefs.SetInt("record", record);
         }
