@@ -1,36 +1,52 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
-public class SpawnManager : MonoBehaviour, IPausable
+public class SpawnManager : IPausable, ITickable
 {
-    [SerializeField] private Ball ballPrefab;
-    [SerializeField] private GameManager gameManager;
+    private Ball _ballPrefab;
     private float boundY = 13, boundX;
+    private DiContainer _container;
+    private bool _isPause;
+    private float timer;
+    private float spawnRate;
 
+    public SpawnManager(DiContainer diContainer, Ball ballPrefab, PauseManager pauseManager)
+    {
+        _container = diContainer;
+        _ballPrefab = ballPrefab;
+        pauseManager.Register(this);
+        Start();
+    }
     private void Start()
     {
         Camera camera = Camera.main;
-        boundX = camera.ViewportToWorldPoint(new Vector3(1, 0, -camera.transform.position.z)).x - ballPrefab.gameObject.transform.localScale.x / 2;
-        gameManager.OnPause += Pause;
-        gameManager.OnResume += Resume;
-        Resume();
+        boundX = camera.ViewportToWorldPoint(new Vector3(1, 0, -camera.transform.position.z)).x - _ballPrefab.gameObject.transform.localScale.x / 2;
+        spawnRate = 10;
     }
 
     private void Spawn()
     {
         Vector3 position = new Vector3(Random.Range(-boundX, boundX), boundY);
-        Instantiate(ballPrefab, position, Quaternion.identity);
+        _container.InstantiatePrefabForComponent<Ball>(_ballPrefab, position, Quaternion.identity, null);
     }
 
-    public void Pause()
+    public void Tick()
     {
-        if (IsInvoking(nameof(Spawn)))
-            CancelInvoke(nameof(Spawn));
+        if (!_isPause)
+        {
+            timer += Time.fixedDeltaTime;
+            if (timer > spawnRate)
+            {
+                Spawn();
+                timer = 0;
+            }
+        }
     }
 
-    public void Resume()
+    public void SetPause(bool isPause)
     {
-        InvokeRepeating(nameof(Spawn), 1, 1);
+        _isPause = isPause;
     }
 }

@@ -1,52 +1,68 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Zenject;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField] private Button menuButton;
-    [SerializeField] private Button replayButton;
-    [SerializeField] private Button closeButton;
-    [SerializeField] private Text scoreText;
-    [SerializeField] private Text recordText;
-    [SerializeField] private GameManager gameManager;
-    [SerializeField] private Image health;
-    [SerializeField] private GameObject pauseMenu;
-    [SerializeField] private Text pauseText;
-    [SerializeField] private GameObject loseMenu;
-    private float currentHealth;
-    private float newHealthValue;
-    private bool smoothHealthBar = false;
-    private float progress;
-    private ReplayScene scene;
+    [SerializeField] Button menuButton;
+    [SerializeField] Button replayButton;
+    [SerializeField] Button closeButton;
+    [SerializeField] Text scoreText;
+    [SerializeField] Text recordText;
+    [SerializeField] Image health;
+    [SerializeField] GameObject pauseMenu;
+    [SerializeField] Text pauseText;
+    [SerializeField] GameObject loseMenu;
+    [SerializeField] GameObject adMenu;
+    [SerializeField] Button adButton;
+    private GameManager _gameManager;
+    private float _currentHealth;
+    private float _newHealthValue;
+    private bool _smoothHealthBar = false;
+    private float _progress;
+    private ReplayScene _scene;
+    private AdService _adService;
 
-    private void Awake()
+    [Inject]
+    private void Construct(AdService adService, GameManager gameManager, PauseManager pauseManager)
     {
-        scene = new ReplayScene(replayButton);
-        gameManager.OnPointChanged += OnPointChanged;
-        gameManager.OnRecordChanged += OnRecordChanged;
-        gameManager.OnHealthChanged += OnHealthChanged;
-        gameManager.OnLoseGame += LoseGame;
-    }
+        _gameManager = gameManager;
+        _adService = adService;
+        menuButton.onClick.AddListener(() => pauseManager.SetPause(true));
+        closeButton.onClick.AddListener(() => pauseManager.SetPause(false));
+        menuButton.onClick.AddListener(() => gameManager.LoadLastRecord());
 
+
+        _scene = new ReplayScene(replayButton);
+        _gameManager.OnPointChanged += OnPointChanged;
+        _gameManager.OnRecordChanged += OnRecordChanged;
+        _gameManager.OnHealthChanged += OnHealthChanged;
+        _gameManager.OnLoseGame += LoseGame;
+        _adService.InitServices();
+        adButton.onClick.AddListener(_adService.ShowRewardedAd);
+        adButton.onClick.AddListener(() => adMenu.SetActive(false));
+    }
     private void Update()
     {
-        if (smoothHealthBar)
+        if (_smoothHealthBar)
         {
-            progress += 0.01f;
-            health.fillAmount = Mathf.Lerp(currentHealth, newHealthValue, progress);
+            _progress += 0.01f;
+            health.fillAmount = Mathf.Lerp(_currentHealth, _newHealthValue, _progress);
         }
-        if (health.fillAmount == newHealthValue)
+        if (health.fillAmount == _newHealthValue)
         {
-            progress = 0;
-            smoothHealthBar = false;
+            _progress = 0;
+            _smoothHealthBar = false;
         }
     }
 
     private void OnHealthChanged(int value)
     {
-        currentHealth = health.fillAmount;
-        newHealthValue = value / 100.0f;
-        smoothHealthBar = true;
+        _currentHealth = health.fillAmount;
+        _newHealthValue = value / 100.0f;
+        _smoothHealthBar = true;
     }
     private void LoseGame()
     {
@@ -57,6 +73,8 @@ public class UIManager : MonoBehaviour
         scoreText.gameObject.SetActive(false);
         closeButton.gameObject.SetActive(false);
         pauseText.gameObject.SetActive(false);
+        adMenu.SetActive(true);
+        _adService.ShowInterstitialAd();
     }
 
     private void OnRecordChanged(int newRecord)
@@ -68,5 +86,6 @@ public class UIManager : MonoBehaviour
     {
         scoreText.text = score.ToString();
     }
+
 
 }

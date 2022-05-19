@@ -1,23 +1,19 @@
 ﻿using System;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class GameManager
 {
     private int point, lastRecord, health = 100;
-    private SaveManager save;
+    private bool _loseGame = false;
+    private SaveManager _save;
     public event Action<int> OnPointChanged;
     public event Action<int> OnHealthChanged;
     public event Action<int> OnRecordChanged;
     public event Action OnLoseGame;
-    public event Action OnPause;
-    public event Action OnResume;
-    private void Awake()
+    public GameManager(SaveManager saveManager)
     {
-        save = new SaveManager();
-        OnRecordChanged += save.SetRecord;
-    }
-    private void Start()
-    {
+        _save = saveManager;
+        OnRecordChanged += _save.SetRecord;
         LoadLastRecord();
     }
 
@@ -26,11 +22,19 @@ public class GameManager : MonoBehaviour
         this.point += point;
         OnPointChanged?.Invoke(this.point);
     }
+    public void DoublePoints()
+    {
+        point *= 2;
+        OnPointChanged?.Invoke(point);
+    }
     public void ApplyDamage(int value)
     {
         health -= value;
-        if (health <= 0)
+        if (health <= 0 && !_loseGame)
+        {
+            _loseGame = true;
             OnLoseGame?.Invoke();
+        }
         OnHealthChanged?.Invoke(health);
     }
     public void ChangeLastRecord()
@@ -38,22 +42,14 @@ public class GameManager : MonoBehaviour
         lastRecord = point;
         OnRecordChanged?.Invoke(lastRecord);
     }
-    private void LoadLastRecord()
+    public void LoadLastRecord()
     {
-        lastRecord = save.Record;
+        lastRecord = _save.Record;
         OnRecordChanged?.Invoke(lastRecord);
     }
     private void OnApplicationQuit()
     {
         ChangeLastRecord();
-        OnRecordChanged -= save.SetRecord;
-    }
-    public void Pause()
-    {
-        OnPause?.Invoke();
-    }
-    public void Resume()
-    {
-        OnResume?.Invoke();
+        OnRecordChanged -= _save.SetRecord;
     }
 }

@@ -1,29 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
-public class PlayerInput : MonoBehaviour, IPausable
+public class PlayerInput : IPausable, ITickable
 {
-    private Camera mainCamera;
-    private bool onPause;
-    [SerializeField] GameManager gameManager;
-    private void Start()
+    private Camera _mainCamera;
+    private bool _isPause;
+
+
+    [Inject]
+    private void Construct(PauseManager pauseManager)
     {
-        gameManager.OnPause += Pause;
-        gameManager.OnResume += Resume;
-        mainCamera = Camera.main;
+        pauseManager.Register(this);
+        Start();
     }
 
-    void Update()
+    private void Start()
     {
-        if (Input.GetMouseButtonDown(0) && !onPause)
-        {
-            MouseClick();
-        }
+        _mainCamera = Camera.main;
     }
     void MouseClick()
     {
-        var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        var ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hitInfo))
         {
             if (hitInfo.collider.TryGetComponent(out IDamageable ball))
@@ -32,6 +31,17 @@ public class PlayerInput : MonoBehaviour, IPausable
             }
         }
     }
-    public void Pause() => onPause = true;
-    public void Resume() => onPause = false;
+
+    public void Tick()
+    {
+        if (Input.GetMouseButtonDown(0) && !_isPause)
+        {
+            MouseClick();
+        }
+    }
+
+    public void SetPause(bool isPause)
+    {
+        _isPause = isPause;
+    }
 }

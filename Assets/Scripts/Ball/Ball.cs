@@ -1,33 +1,39 @@
 using UnityEngine;
+using Zenject;
 
 public class Ball : MonoBehaviour, IDamageable, IPausable
 {
-    //private ParticleManager death;
-    private BallSettings settings;
-    private Camera mainCamera;
-    private GameManager gameManager;
-    private bool onPause;
+    private ParticleManager _death;
+    private BallSettings _settings;
+    private Camera _mainCamera;
+    private GameManager _gameManager;
+    private bool _isPause;
+    private PauseManager _pauseManager;
+
+    [Inject]
+    private void Construct(GameManager gameManager, PauseManager pauseManager)
+    {
+        _gameManager = gameManager;
+        _pauseManager = pauseManager;
+        _pauseManager.Register(this);
+    }
 
     private void Start()
     {
-        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
-        gameManager.OnPause += Pause;
-        gameManager.OnResume += Resume;
-        var renderer = gameObject.GetComponent<Renderer>();
-        settings = new BallSettings(renderer);
-        //death = new ParticleManager();
-        mainCamera = Camera.main;
-        //death.StartColor = settings.Color;
+        _settings = GetComponent<BallSettings>();
+        _settings.IncreaseDifficult(Time.timeSinceLevelLoad / 50.0f);
+        _death = new ParticleManager();
+        _mainCamera = Camera.main;
     }
 
     private void FixedUpdate()
     {
-        if (!onPause)
+        if (!_isPause)
         {
-            transform.Translate(Vector3.down * Time.deltaTime * settings.Speed, Space.World);
+            transform.Translate(Vector3.down * Time.deltaTime * _settings.Speed, Space.World);
             if (IsOutsideEdge(transform.position))
             {
-                gameManager.ApplyDamage(settings.Damage);
+                _gameManager.ApplyDamage(_settings.Damage);
                 Death();
             }
         }
@@ -35,28 +41,33 @@ public class Ball : MonoBehaviour, IDamageable, IPausable
 
     private void Death()
     {
-        gameManager.OnPause -= Pause;
-        //Instantiate(death.prefab, transform.position, Quaternion.identity).Emit(1);
-        Destroy(gameObject, settings.BallDestroyDelay);
+        Instantiate(_death.prefab, transform.position, _death.prefab.transform.rotation);
+        _pauseManager.UnRegister(this);
+        Destroy(gameObject, _settings.BallDestroyDelay);
     }
     private void DeathWithReward()
     {
-        gameManager.AddPoint(settings.RewardPoint);
+        _gameManager.AddPoint(_settings.RewardPoint);
         Death();
     }
     private bool IsOutsideEdge(Vector3 position)
     {
-        Vector3 viewport = mainCamera.WorldToViewportPoint(position);
+        Vector3 viewport = _mainCamera.WorldToViewportPoint(position);
         return (viewport.y < 0f || viewport.x > 1f || viewport.x < 0f);
     }
 
     public void ApplyDamage(int damage)
     {
-        settings.Health -= damage;
-        if (settings.Health <= 0f)
+        _settings.Health -= damage;
+        if (_settings.Health <= 0f)
             DeathWithReward();
     }
 
-    public void Pause() => onPause = true;
-    public void Resume() => onPause = false;
+    public void Pause() => _isPause = true;
+    public void Resume() => _isPause = false;
+
+    public void SetPause(bool isPause)
+    {
+        _isPause = isPause;
+    }
 }
