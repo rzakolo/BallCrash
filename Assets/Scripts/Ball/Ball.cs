@@ -20,7 +20,7 @@ public class Ball : MonoBehaviour, IDamageable, IPausable
 
     private void Start()
     {
-        _settings = GetComponent<BallSettings>();
+        _settings = new BallSettings();
         _settings.IncreaseDifficult(Time.timeSinceLevelLoad / 50.0f);
         _death = new ParticleManager();
         _mainCamera = Camera.main;

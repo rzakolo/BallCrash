@@ -8,17 +8,17 @@ public class BallSettings
     public int Damage { get; private set; }
     public int Health { get; set; }
     public Color Color { get; private set; }
-    public BallSettings(Renderer renderer)
+    public BallSettings()
     {
         Health = Random.Range(1, 3);
         Speed = 1;
         Color = Random.ColorHSV();
         RewardPoint = Random.Range(1, 10);
         Damage = Random.Range(1, 10);
-        renderer.material.color = Color;
+        //renderer.material.color = Color;
         IncreaseDifficult(Time.timeSinceLevelLoad / 50.0f);
     }
-    private void IncreaseDifficult(float increaseValue, float defaultDifficult = 1)
+    public void IncreaseDifficult(float increaseValue, float defaultDifficult = 1)
     {
         if (increaseValue > 0)
             Speed = defaultDifficult + increaseValue;
